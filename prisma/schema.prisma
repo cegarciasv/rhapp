@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Candidate {
+  id        String       @id @default(cuid())
+  name      String
+  email     String?
+  position  String?
+  age       String?
+  education String?
+  createdAt DateTime     @default(now())
+  results   TestResult[]
+}
+
+model TestResult {
+  id          String    @id @default(cuid())
+  candidateId String
+  testName    String
+  answers     String    // JSON string
+  scores      String    // JSON string
+  createdAt   DateTime  @default(now())
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+}

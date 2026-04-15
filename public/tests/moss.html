@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOSS | Evaluación de Adaptabilidad Social</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root { --primary: #1e607b; --bg: #1e607b; --text: #1e293b; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.container { width: 100%; max-width: 500px; padding: 20px; }
+.card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
+.btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px; font-size: 16px; }
+.btn-outline { background: white; color: var(--primary); border: 1px solid var(--primary); }
+.opt { display: block; padding: 10px; border: 1px solid #ddd; margin-bottom: 5px; border-radius: 5px; cursor: pointer; text-align: left; }
+.opt:hover { background: #f0f0f0; }
+.selected { background: var(--primary); color: white; border-color: var(--primary); }
+.hidden { display: none; }
+h1.title { color: var(--primary); font-size: 36px; letter-spacing: 4px; margin-bottom: 5px; }
+p.subtitle { color: #64748b; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px; }
+hr { border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+.form-group { text-align: left; margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600; }
+.form-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="vLanding" class="card">
+    <h1 class="title">MOSS</h1>
+    <p class="subtitle">SISTEMA DE EVALUACIÓN PSICOMÉTRICA</p>
+    <hr>
+    <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 20px;">¿CÓMO DESEAS ACCEDER?</p>
+    <button class="btn" onclick="location.href='/admin'">🔒 Acceso Evaluador</button>
+    <button class="btn btn-outline" onclick="showReg()">📝 Completar Prueba</button>
+  </div>
+
+  <div id="vReg" class="card hidden" style="text-align: left;">
+    <h2 style="margin-bottom: 20px;">Registro de Candidato</h2>
+    <div class="form-group">
+      <label>Nombre completo *</label>
+      <input id="regName" type="text">
+    </div>
+    <div class="form-group">
+      <label>Puesto *</label>
+      <input id="regPosition" type="text">
+    </div>
+    <button class="btn" onclick="doRegister()">Registrar y Continuar</button>
+  </div>
+
+  <div id="vEval" class="card hidden" style="max-width: 800px;">
+    <h3 id="q-text" style="text-align: left; margin-bottom: 20px;"></h3>
+    <div id="opts"></div>
+    <button class="btn" onclick="next()" style="margin-top:20px">Siguiente</button>
+  </div>
+
+  <div id="vDone" class="card hidden" style="text-align:center">
+    <h1>¡Evaluación Finalizada!</h1>
+    <p>Tus resultados han sido registrados correctamente.</p>
+    <button class="btn" onclick="location.href='/'">Volver</button>
+  </div>
+</div>
+
+<script>
+const Q = [
+  {t:"Usted es el jefe de un grupo y uno de sus subordinados no está trabajando bien:", o:["Hablar con él en privado","Darle más trabajo","Ignorarlo","Despedirlo"]},
+  {t:"Si un amigo le pide dinero prestado y usted sabe que no se lo va a pagar:", o:["Prestarle el dinero","Decirle que no tiene","Darle una parte","Evitar el tema"]}
+]; // Truncated for brevity
+let cid = null;
+let cur = 0, ans = {};
+
+function showReg() {
+  document.getElementById('vLanding').classList.add('hidden');
+  document.getElementById('vReg').classList.remove('hidden');
+  document.body.style.background = '#f8fafc';
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value;
+  const position = document.getElementById('regPosition').value;
+  if(!name || !position) return alert("Nombre y Puesto son obligatorios");
+
+  const res = await fetch('/api/candidates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, position })
+  });
+  const data = await res.json();
+  cid = data.id;
+  
+  document.getElementById('vReg').classList.add('hidden');
+  document.querySelector('.container').style.maxWidth = '800px';
+  document.getElementById('vEval').classList.remove('hidden');
+  showQ();
+}
+
+function showQ() {
+  document.getElementById('q-text').textContent = `${cur+1}. ${Q[cur].t}`;
+  let h = '';
+  Q[cur].o.forEach((o, i) => {
+    h += `<div class="opt ${ans[cur]===i?'selected':''}" onclick="sel(${i})">${o}</div>`;
+  });
+  document.getElementById('opts').innerHTML = h;
+}
+
+function sel(i) { ans[cur] = i; showQ(); }
+
+async function next() {
+  if(ans[cur] === undefined) return alert("Seleccione una opción");
+  if(cur < Q.length - 1) { cur++; showQ(); }
+  else {
+    const res = await fetch('/api/results', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ candidateId: cid, testName: 'MOSS', answers: ans, scores: { completed: true } })
+    });
+    if(res.ok) {
+      document.getElementById('vEval').classList.add('hidden');
+      document.querySelector('.container').style.maxWidth = '500px';
+      document.getElementById('vDone').classList.remove('hidden');
+    }
+  }
+}
+</script>
+</body>
+</html>

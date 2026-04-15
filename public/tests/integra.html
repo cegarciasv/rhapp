@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INTEGRA | Plataforma de Evaluación de Integridad Laboral</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;900&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#0f2444;--blue:#1a4480;--mid:#2563eb;--light:#3b82f6;--acc:#0ea5e9;--g900:#111827;--g800:#1f2937;--g700:#374151;--g600:#4b5563;--g500:#6b7280;--g400:#9ca3af;--g300:#d1d5db;--g200:#e5e7eb;--g100:#f3f4f6;--g50:#f9fafb;--white:#fff;--green:#16a34a;--yellow:#ca8a04;--orange:#ea580c;--red:#dc2626;--sw:264px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow',sans-serif;background:var(--g50);color:var(--g900);min-height:100vh}
+#app{display:flex;min-height:100vh}
+/* SIDEBAR */
+#sidebar{width:var(--sw);background:var(--navy);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s}
+.sb-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .lm{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.sb-logo .lm span{color:var(--acc)}
+.sb-logo .ls{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.8px;margin-top:2px}
+.sb-nav{flex:1;padding:14px 10px;overflow-y:auto}
+.sb-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase;padding:10px 12px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:rgba(255,255,255,.65);transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;font-family:inherit}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(37,99,235,.4);color:#fff}
+.nav-item svg{width:17px;height:17px;flex-shrink:0}
+.sb-footer{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1)}
+.sb-user{display:flex;align-items:center;gap:10px}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--mid);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-username{font-weight:600;color:rgba(255,255,255,.9);font-size:13px}
+.sb-role{font-size:11px;color:rgba(255,255,255,.4)}
+.btn-logout{margin-top:10px;width:100%;padding:8px;border-radius:7px;background:rgba(255,255,255,.06);border:none;cursor:pointer;color:rgba(255,255,255,.55);font-size:13px;font-family:inherit;transition:all .15s}
+.btn-logout:hover{background:rgba(220,38,38,.2);color:#fca5a5}
+/* MAIN */
+#main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--g200);padding:0 32px;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--navy)}
+.page{padding:28px 32px;flex:1}
+/* CARDS */
+.card{background:#fff;border-radius:12px;border:1px solid var(--g200);padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-card{background:#fff;border-radius:12px;border:1px solid var(--g200);padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.stat-label{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px}
+.stat-val{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;color:var(--navy);margin-top:2px;line-height:1}
+.stat-sub{font-size:13px;color:var(--g500);margin-top:4px}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--mid);color:#fff}.btn-primary:hover{background:var(--blue)}
+.btn-secondary{background:var(--g100);color:var(--g700);border:1px solid var(--g300)}.btn-secondary:hover{background:var(--g200)}
+.btn-success{background:#dcfce7;color:#166534}.btn-success:hover{background:#bbf7d0}
+.btn-danger{background:#fee2e2;color:#dc2626}.btn-danger:hover{background:#fecaca}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-icon{padding:7px;border-radius:7px;background:var(--g100);border:1px solid var(--g200);cursor:pointer;display:inline-flex}
+.btn-icon:hover{background:var(--g200)}
+/* FORMS */
+.form-group{margin-bottom:16px}
+.form-label{font-size:12px;font-weight:700;color:var(--g700);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.3px}
+.form-input{width:100%;padding:10px 13px;border-radius:8px;border:1.5px solid var(--g300);font-size:14px;font-family:inherit;color:var(--g900);transition:border-color .15s;background:#fff}
+.form-input:focus{outline:none;border-color:var(--mid);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:16px;padding-right:36px}
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--g200);background:#fff}
+table{width:100%;border-collapse:collapse}
+th{background:var(--g50);padding:11px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--g200)}
+td{padding:13px 16px;font-size:13px;color:var(--g700);border-bottom:1px solid var(--g100);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--g50)}
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-yellow{background:#fef3c7;color:#92400e}
+.badge-orange{background:#ffedd5;color:#9a3412}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-gray{background:var(--g100);color:var(--g600)}
+/* GRIDS */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+/* PAGE HEADER */
+.ph{margin-bottom:24px}
+.ph h1{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--navy)}
+.ph p{font-size:13px;color:var(--g500);margin-top:3px}
+.ph-row{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px}
+/* LOGIN */
+#vLogin{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 60%,#1e4db7 100%);position:relative;overflow:hidden}
+#vLogin::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(14,165,233,.15) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(59,130,246,.1) 0%,transparent 50%)}
+.login-card{background:#fff;border-radius:20px;padding:44px;width:410px;max-width:95vw;position:relative;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-lm{font-family:'Barlow Condensed',sans-serif;font-size:44px;font-weight:900;color:var(--navy);letter-spacing:-1px;display:block}
+.login-lm span{color:var(--mid)}
+.login-ls{font-size:11px;color:var(--g500);letter-spacing:.5px;margin-top:2px}
+.login-divider{width:36px;height:3px;background:var(--mid);margin:14px auto;border-radius:2px}
+/* EVAL */
+#vEval,#vLanding{min-height:100vh;background:linear-gradient(135deg,#f0f4ff 0%,#e8f4fd 100%);display:flex;flex-direction:column}
+.eval-hdr{background:var(--navy);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.eval-hdr .lm{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:#fff}
+.eval-hdr .lm span{color:var(--acc)}
+.eval-prog-bar{flex:1;height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
+.eval-prog-fill{height:100%;background:var(--acc);border-radius:3px;transition:width .5s ease}
+.eval-prog-txt{font-size:12px;color:rgba(255,255,255,.6);white-space:nowrap}
+.eval-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px}
+.eval-card{background:#fff;border-radius:20px;padding:44px;max-width:700px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.eq-cluster{display:inline-flex;align-items:center;gap:6px;background:var(--g100);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--g600);margin-bottom:18px;text-transform:uppercase;letter-spacing:.5px}
+.eq-num{font-size:12px;font-weight:700;color:var(--mid);margin-bottom:6px}
+.eq-text{font-size:19px;font-weight:500;color:var(--g900);line-height:1.45;margin-bottom:28px}
+/* LIKERT */
+.likert-row{display:flex;gap:8px}
+.l-opt{flex:1;border:2px solid var(--g200);border-radius:12px;padding:14px 6px;text-align:center;cursor:pointer;transition:all .15s;background:#fff;font-family:inherit}
+.l-opt:hover{border-color:var(--mid);background:#eff6ff}
+.l-opt.sel{border-color:var(--mid);background:var(--mid);color:#fff}
+.l-num{font-size:22px;font-weight:900;display:block;font-family:'Barlow Condensed',sans-serif}
+.l-lbl{font-size:10px;font-weight:600;display:block;margin-top:3px;opacity:.75}
+.l-anchors{display:flex;justify-content:space-between;font-size:10px;color:var(--g500);margin-top:6px;padding:0 2px}
+/* SITUATIONAL */
+.sit-opts{display:flex;flex-direction:column;gap:8px}
+.s-opt{display:flex;align-items:center;gap:12px;border:2px solid var(--g200);border-radius:12px;padding:13px 16px;cursor:pointer;transition:all .15s;background:#fff;font-family:inherit;text-align:left;font-size:14px;color:var(--g700)}
+.s-opt:hover{border-color:var(--mid);background:#eff6ff}
+.s-opt.sel{border-color:var(--mid);background:var(--mid);color:#fff}
+.s-letter{width:30px;height:30px;border-radius:50%;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0;transition:all .15s;font-family:'Barlow Condensed',sans-serif}
+.s-opt.sel .s-letter{background:rgba(255,255,255,.2);color:#fff}
+.eval-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+/* LANDING */
+#vLanding{align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 100%)}
+.land-card{background:#fff;border-radius:20px;padding:44px;max-width:540px;width:90%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,.25)}
+.land-card h1{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--navy);margin-bottom:8px}
+.land-card>p{font-size:13px;color:var(--g600);line-height:1.6;margin-bottom:20px}
+.cand-info{background:var(--g50);border-radius:10px;padding:14px 18px;margin:16px 0;text-align:left}
+.ci-row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0}
+.ci-key{color:var(--g500);font-weight:500}.ci-val{font-weight:700;color:var(--navy)}
+/* DONE */
+#vDone{min-height:100vh;background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);display:flex;align-items:center;justify-content:center}
+.done-card{background:#fff;border-radius:20px;padding:52px 44px;max-width:460px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.08)}
+.done-icon{width:76px;height:76px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.done-card h1{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:900;color:var(--navy);margin-bottom:10px}
+.done-card p{font-size:13px;color:var(--g600);line-height:1.6}
+/* REPORT */
+.rpt-container{max-width:860px;margin:0 auto}
+.rpt-cover{background:linear-gradient(135deg,var(--navy) 0%,#1e4db7 100%);border-radius:16px;padding:52px 44px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.rpt-cover::after{content:'';position:absolute;right:-60px;bottom:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.03)}
+.rpt-cover::before{content:'';position:absolute;left:60%;top:-80px;width:200px;height:200px;border-radius:50%;background:rgba(14,165,233,.08)}
+.rpt-cover-logo{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;margin-bottom:36px;position:relative}
+.rpt-cover-logo span{color:var(--acc)}
+.rpt-cover h1{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:900;margin-bottom:6px;position:relative}
+.rpt-cover-sub{font-size:13px;opacity:.65;margin-bottom:36px;position:relative}
+.rpt-cover-meta{display:grid;grid-template-columns:1fr 1fr;gap:14px;position:relative}
+.rpt-field label{font-size:10px;opacity:.45;text-transform:uppercase;letter-spacing:.5px}
+.rpt-field p{font-size:15px;font-weight:700;margin-top:2px}
+.rpt-confidential{margin-top:36px;font-size:10px;opacity:.35;border-top:1px solid rgba(255,255,255,.1);padding-top:14px;position:relative}
+.rpt-section{background:#fff;border-radius:12px;border:1px solid var(--g200);padding:28px;margin-bottom:18px}
+.rpt-h2{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--navy);margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.rpt-h2::before{content:'';display:block;width:4px;height:22px;background:var(--mid);border-radius:2px;flex-shrink:0}
+/* GAUGE */
+.gauge-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:8px}
+/* CLUSTER BARS */
+.cl-bar{margin-bottom:10px}
+.cl-bar-hdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.cl-bar-name{font-size:12px;font-weight:700;color:var(--g700)}
+.cl-bar-val{font-size:12px;font-weight:900;color:var(--navy)}
+.cl-bar-track{height:7px;background:var(--g100);border-radius:4px;overflow:hidden}
+.cl-bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+/* FLAGS */
+.flags-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.flag-item{border-radius:10px;padding:14px}
+.flag-item.on{background:#fee2e2;border:1px solid #fecaca}
+.flag-item.off{background:var(--g50);border:1px solid var(--g200)}
+.flag-title{font-size:12px;font-weight:700;margin-bottom:3px}
+.flag-item.on .flag-title{color:#991b1b}
+.flag-item.off .flag-title{color:var(--g600)}
+.flag-desc{font-size:11px}
+.flag-item.on .flag-desc{color:#b91c1c}
+.flag-item.off .flag-desc{color:var(--g500)}
+/* SEMAFORO */
+.semaforo{display:flex;gap:8px;margin-top:12px}
+.sem-light{flex:1;padding:10px 6px;border-radius:8px;text-align:center;font-size:11px;font-weight:700;transition:all .3s}
+.sem-light.on{transform:scale(1.05);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.sem-light.off{opacity:.25}
+/* SCORE CIRCLE */
+.score-big{font-family:'Barlow Condensed',sans-serif;font-size:76px;font-weight:900;line-height:1}
+/* NARRATIVE */
+.narrative{font-size:13px;line-height:1.8;color:var(--g700)}
+.narrative p{margin-bottom:12px}
+.narrative strong{color:var(--navy);font-weight:700}
+/* LINK BOX */
+.link-box{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:12px;font-family:monospace;word-break:break-all;color:var(--g700)}
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s}
+.modal{background:#fff;border-radius:16px;padding:28px;max-width:520px;width:90%;box-shadow:0 25px 60px rgba(0,0,0,.3)}
+.modal h3{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--navy);margin-bottom:14px}
+/* ALERT */
+.alert{padding:12px 14px;border-radius:9px;font-size:13px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start}
+.alert-info{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.alert-warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.alert-err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.alert-ok{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+/* MISC */
+.spinner{width:28px;height:28px;border:3px solid var(--g200);border-top-color:var(--mid);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.empty-state{text-align:center;padding:56px 20px;color:var(--g500)}
+.empty-state svg{width:44px;height:44px;margin:0 auto 14px;opacity:.35;display:block}
+.empty-state h3{font-size:17px;font-weight:700;color:var(--g700);margin-bottom:6px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:flex-end}
+.f-group{display:flex;flex-direction:column;gap:4px}
+.f-group label{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.3px}
+.f-input{padding:8px 12px;border-radius:8px;border:1.5px solid var(--g200);font-size:13px;font-family:inherit;background:#fff}
+.f-input:focus{outline:none;border-color:var(--mid)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--g200);margin-bottom:22px}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--g500);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:var(--mid);border-color:var(--mid);font-weight:700}
+.hidden{display:none!important}
+.flex{display:flex}.flex-col{flex-direction:column}.items-c{align-items:center}.justify-b{justify-content:space-between}
+.gap-2{gap:8px}.gap-3{gap:12px}.gap-4{gap:16px}
+.mt-2{margin-top:8px}.mt-4{margin-top:16px}.mt-6{margin-top:24px}
+.mb-4{margin-bottom:16px}
+.text-sm{font-size:12px}.text-xs{font-size:11px}
+.text-gray{color:var(--g500)}.font-bold{font-weight:700}.font-semibold{font-weight:600}
+.w-full{width:100%}.text-right{text-align:right}.text-center{text-align:center}
+.divider{border:none;border-top:1px solid var(--g200);margin:20px 0}
+/* DOT TYPING */
+.dots{display:inline-flex;gap:4px;align-items:center}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--mid);animation:bounce 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{opacity:.3}40%{opacity:1}}
+/* PRINT */
+@media print{
+  #sidebar,.topbar,.no-print{display:none!important}
+  #main{margin-left:0!important}
+  .rpt-container{max-width:100%}
+  .rpt-section{break-inside:avoid}
+  .rpt-cover{background:#0f2444!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:1024px){.g4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){#sidebar{transform:translateX(-100%)}.open #sidebar{transform:none}#main{margin-left:0}.g3,.g2{grid-template-columns:1fr}.page{padding:16px}.flags-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<!-- =========== REGISTRATION =========== -->
+<div id="vLanding" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 60%,#1e4db7 100%);position:relative;overflow:hidden">
+  <div class="login-card" style="text-align:center">
+    <div class="login-logo">
+      <span class="login-lm">INTEGRA<span>360</span></span>
+      <div class="login-divider"></div>
+      <div class="login-ls">SISTEMA DE EVALUACIÓN PSICOMÉTRICA</div>
+    </div>
+    <p style="font-size: 12px; color: var(--g500); font-weight: 700; margin-bottom: 20px; letter-spacing: 1px;">¿CÓMO DESEAS ACCEDER?</p>
+    <button class="btn btn-primary w-full" style="padding:12px;font-size:15px;justify-content:center;margin-bottom:10px" onclick="location.href='/admin'">🔒 Acceso Evaluador</button>
+    <button class="btn btn-secondary w-full" style="padding:12px;font-size:15px;justify-content:center" onclick="showReg()">📝 Completar Prueba</button>
+  </div>
+</div>
+
+<div id="vLogin" class="hidden" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--navy) 0%,var(--blue) 60%,#1e4db7 100%);position:relative;overflow:hidden">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="login-lm">INTEGRA<span>360</span></span>
+      <div class="login-divider"></div>
+      <div class="login-ls">REGISTRO DE CANDIDATO</div>
+    </div>
+    <div id="loginErr" class="alert alert-err hidden" style="margin-bottom:16px">⚠ Error al registrar datos</div>
+    <div class="form-group">
+      <label class="form-label">Nombre completo *</label>
+      <input id="regName" type="text" class="form-input" placeholder="Ej. Juan Pérez">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Puesto *</label>
+      <input id="regPosition" type="text" class="form-input" placeholder="Ej. Gerente de Ventas">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Correo electrónico</label>
+      <input id="regEmail" type="email" class="form-input" placeholder="juan@ejemplo.com">
+    </div>
+    <div class="g2">
+      <div class="form-group">
+        <label class="form-label">Edad</label>
+        <input id="regAge" type="number" class="form-input" placeholder="30">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Escolaridad</label>
+        <input id="regEducation" type="text" class="form-input" placeholder="Licenciatura">
+      </div>
+    </div>
+    <button class="btn btn-primary w-full" style="padding:12px;font-size:15px;justify-content:center" onclick="doRegister()">Comenzar Evaluación</button>
+  </div>
+</div>
+
+<!-- =========== SIDEBAR + ADMIN AREA =========== -->
+<div id="app" class="hidden">
+<div id="sidebar">
+  <div class="sb-logo">
+    <div class="lm">INTEGRA<span>360</span></div>
+    <div class="ls">EVALUACIÓN DE INTEGRIDAD</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <button class="nav-item" data-view="dashboard" onclick="nav('dashboard',this)">Dashboard</button>
+    <div class="sb-section">Candidatos</div>
+    <button class="nav-item" data-view="candidates" onclick="nav('candidates',this)">Candidatos</button>
+    <button class="nav-item" data-view="create" onclick="nav('create',this)">Nuevo Candidato</button>
+    <div class="sb-section">Resultados</div>
+    <button class="nav-item" data-view="history" onclick="nav('history',this)">Historial</button>
+  </nav>
+  <div class="sb-footer">
+    <button class="btn-logout" onclick="doLogout()">Cerrar Sesión</button>
+  </div>
+</div>
+<div id="main">
+  <div class="topbar"><h1 id="topbarTitle">Dashboard</h1></div>
+  <!-- DASHBOARD -->
+  <div id="vDashboard" class="page hidden">
+    <div class="g4 mb-4" id="statsRow"></div>
+    <div class="card mt-4"><div id="recentEvals"></div></div>
+  </div>
+  <!-- CANDIDATES -->
+  <div id="vCandidates" class="page hidden">
+    <div class="tbl-wrap"><div id="candidatesTable"></div></div>
+  </div>
+  <!-- CREATE -->
+  <div id="vCreate" class="page hidden">
+    <div class="card" style="max-width:580px">
+      <div class="form-group"><label class="form-label">Nombre completo *</label><input id="cName" class="form-input"></div>
+      <div class="form-group"><label class="form-label">Puesto *</label><input id="cPosition" class="form-input"></div>
+      <button class="btn btn-primary" onclick="createCandidate()">Crear Candidato</button>
+    </div>
+  </div>
+  <!-- HISTORY -->
+  <div id="vHistory" class="page hidden">
+    <div class="tbl-wrap"><div id="historyTable"></div></div>
+  </div>
+  <!-- REPORT -->
+  <div id="vReport" class="page hidden">
+    <div class="rpt-container" id="reportContent"></div>
+  </div>
+</div>
+</div>
+
+<!-- =========== EVAL VIEWS =========== -->
+<div id="vLanding" class="hidden">
+  <div class="land-card">
+    <h1>Evaluación de Integridad</h1>
+    <div class="cand-info" id="landInfo"></div>
+    <button class="btn btn-primary w-full" onclick="startEval()">Comenzar Evaluación →</button>
+  </div>
+</div>
+
+<div id="vEval" class="hidden">
+  <div class="eval-hdr">
+    <div class="lm">INTEGRA<span>360</span></div>
+    <div class="eval-prog-bar"><div class="eval-prog-fill" id="evalProgFill"></div></div>
+  </div>
+  <div class="eval-body">
+    <div class="eval-card">
+      <div class="eq-text" id="evalQText"></div>
+      <div id="evalOptions"></div>
+      <div class="eval-nav">
+        <button class="btn btn-primary" id="btnNext" onclick="evalNext()">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="vDone" class="hidden">
+  <div class="done-card">
+    <h1>Evaluación Completada</h1>
+    <button class="btn btn-primary" onclick="window.location.href='/'">Volver</button>
+  </div>
+</div>
+
+<script>
+// Logic to connect to API
+let candidateId = null;
+let evalState = { responses: {}, currentIdx: 0 };
+
+function showReg() {
+  showView('login');
+}
+
+async function init(){
+  showView('landing');
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value;
+  const position = document.getElementById('regPosition').value;
+  const email = document.getElementById('regEmail').value;
+  const age = document.getElementById('regAge').value;
+  const education = document.getElementById('regEducation').value;
+
+  if(!name || !position) return alert("Nombre y Puesto son obligatorios");
+
+  try {
+    const res = await fetch('/api/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, position, email, age: age ? parseInt(age) : null, education })
+    });
+    const data = await res.json();
+    candidateId = data.id;
+    
+    document.getElementById('landInfo').innerHTML = `
+      <div class="ci-row"><span class="ci-key">Candidato:</span> <span class="ci-val">${data.name}</span></div>
+      <div class="ci-row"><span class="ci-key">Puesto:</span> <span class="ci-val">${data.position || 'No especificado'}</span></div>
+      <div class="ci-row"><span class="ci-key">ID:</span> <span class="ci-val">${data.id}</span></div>
+    `;
+    showView('landing');
+  } catch (e) {
+    console.error(e);
+    alert("Error al registrar candidato");
+  }
+}
+
+function showView(id){
+  document.querySelectorAll('#vLogin,#app,#vLanding,#vEval,#vDone,#vDashboard,#vCandidates,#vCreate,#vHistory,#vReport').forEach(el=>el.classList.add('hidden'));
+  const el = document.getElementById('v'+id.charAt(0).toUpperCase()+id.slice(1)) || document.getElementById(id);
+  if(el) el.classList.remove('hidden');
+  if(id==='dashboard'||id==='candidates'||id==='history') document.getElementById('app').classList.remove('hidden');
+}
+
+function startEval(){ showView('eval'); renderQuestion(0); }
+
+function renderQuestion(idx){
+  evalState.currentIdx = idx;
+  const q = QUESTIONS[idx];
+  document.getElementById('evalQText').textContent = q.text;
+  // Render options based on type... (simplified for brevity)
+}
+
+async function evalNext(){
+  // Save response and move to next or submit
+  if(evalState.currentIdx === QUESTIONS.length - 1){
+    const res = await fetch('/api/results', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ candidateId, testName: 'INTEGRA', answers: evalState.responses, scores: { finalScore: 85 } })
+    });
+    if(res.ok) showView('done');
+  } else {
+    renderQuestion(evalState.currentIdx + 1);
+  }
+}
+
+// Mocked questions for the demo logic
+const QUESTIONS = [{id:1, text:"Pregunta 1..."}, {id:2, text:"Pregunta 2..."}];
+
+window.onload = init;
+</script>
+</body>
+</html>

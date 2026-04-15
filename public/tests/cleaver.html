@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLEAVER | Evaluación de Comportamiento</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root { --primary: #1e607b; --bg: #1e607b; --text: #1e293b; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.container { width: 100%; max-width: 500px; padding: 20px; }
+.card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
+.btn { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 10px; font-size: 16px; }
+.btn-outline { background: white; color: var(--primary); border: 1px solid var(--primary); }
+.grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: left; }
+.header { font-weight: 800; text-transform: uppercase; font-size: 12px; color: #64748b; }
+.row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; text-align: left; align-items: center; }
+.opt-btn { border: 1px solid #e2e8f0; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; }
+.opt-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.hidden { display: none; }
+h1.title { color: var(--primary); font-size: 36px; letter-spacing: 4px; margin-bottom: 5px; }
+p.subtitle { color: #64748b; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px; }
+hr { border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+.form-group { text-align: left; margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600; }
+.form-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="vLanding" class="card">
+    <h1 class="title">CLEAVER</h1>
+    <p class="subtitle">SISTEMA DE EVALUACIÓN PSICOMÉTRICA</p>
+    <hr>
+    <p style="font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 20px;">¿CÓMO DESEAS ACCEDER?</p>
+    <button class="btn" onclick="location.href='/admin'">🔒 Acceso Evaluador</button>
+    <button class="btn btn-outline" onclick="showReg()">📝 Completar Prueba</button>
+  </div>
+
+  <div id="vReg" class="card hidden" style="text-align: left;">
+    <h2 style="margin-bottom: 20px;">Registro de Candidato</h2>
+    <div class="form-group">
+      <label>Nombre completo *</label>
+      <input id="regName" type="text">
+    </div>
+    <div class="form-group">
+      <label>Puesto *</label>
+      <input id="regPosition" type="text">
+    </div>
+    <button class="btn" onclick="doRegister()">Registrar y Continuar</button>
+  </div>
+
+  <div id="vEval" class="card hidden" style="max-width: 800px;">
+    <div class="grid">
+      <div class="header">Palabra</div>
+      <div class="header" style="text-align:center">Más (+)</div>
+      <div class="header" style="text-align:center">Menos (-)</div>
+    </div>
+    <div id="questions"></div>
+    <button class="btn" onclick="next()" style="margin-top:20px">Siguiente Grupo</button>
+  </div>
+
+  <div id="vDone" class="card hidden" style="text-align:center">
+    <h1>¡Prueba Terminada!</h1>
+    <p>Los datos se han guardado correctamente.</p>
+    <button class="btn" onclick="location.href='/'">Finalizar</button>
+  </div>
+</div>
+
+<script>
+const GROUPS = [
+  {words:["Persuasivo","Gentil","Humilde","Original"]},
+  {words:["Agresivo","Alma de la fiesta","Comodino","Temeroso"]}
+];
+let cid = null;
+let cur = 0, ans = {};
+
+function showReg() {
+  document.getElementById('vLanding').classList.add('hidden');
+  document.getElementById('vReg').classList.remove('hidden');
+  document.body.style.background = '#f8fafc';
+}
+
+async function doRegister() {
+  const name = document.getElementById('regName').value;
+  const position = document.getElementById('regPosition').value;
+  if(!name || !position) return alert("Nombre y Puesto son obligatorios");
+
+  const res = await fetch('/api/candidates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, position })
+  });
+  const data = await res.json();
+  cid = data.id;
+  
+  document.getElementById('vReg').classList.add('hidden');
+  document.querySelector('.container').style.maxWidth = '800px';
+  document.getElementById('vEval').classList.remove('hidden');
+  showGroup();
+}
+
+function showGroup() {
+  const g = GROUPS[cur];
+  let h = '';
+  g.words.forEach((w, i) => {
+    h += `<div class="row">
+      <div>${w}</div>
+      <div class="opt-btn ${ans[cur]?.plus===i?'active':''}" onclick="sel(${i},'plus')">+</div>
+      <div class="opt-btn ${ans[cur]?.minus===i?'active':''}" onclick="sel(${i},'minus')">-</div>
+    </div>`;
+  });
+  document.getElementById('questions').innerHTML = h;
+}
+
+function sel(i, type) {
+  if(!ans[cur]) ans[cur] = {plus:null, minus:null};
+  if(type === 'plus' && ans[cur].minus === i) ans[cur].minus = null;
+  if(type === 'minus' && ans[cur].plus === i) ans[cur].plus = null;
+  ans[cur][type] = i;
+  showGroup();
+}
+
+async function next() {
+  if(!ans[cur] || ans[cur].plus === null || ans[cur].minus === null) return alert("Seleccione un + y un -");
+  if(cur < GROUPS.length - 1) { cur++; showGroup(); }
+  else {
+    const res = await fetch('/api/results', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ candidateId: cid, testName: 'CLEAVER', answers: ans, scores: { completed: true } })
+    });
+    if(res.ok) {
+      document.getElementById('vEval').classList.add('hidden');
+      document.querySelector('.container').style.maxWidth = '500px';
+      document.getElementById('vDone').classList.remove('hidden');
+    }
+  }
+}
+</script>
+</body>
+</html>
