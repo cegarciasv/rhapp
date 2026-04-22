@@ -85,9 +85,57 @@ hr { border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0; }
 
 <script>
 const GROUPS = [
-  {words:["Persuasivo","Gentil","Humilde","Original"]},
-  {words:["Agresivo","Alma de la fiesta","Comodino","Temeroso"]}
+  {words:[{w:'Persuasivo',f:'I'},{w:'Gentil',f:'S'},{w:'Humilde',f:'C'},{w:'Original',f:'D'}]},
+  {words:[{w:'Agresivo',f:'D'},{w:'Alma de la fiesta',f:'I'},{w:'Comodino',f:'S'},{w:'Temeroso',f:'C'}]},
+  {words:[{w:'Agradable',f:'S'},{w:'Temeroso de Dios',f:'C'},{w:'Tenaz',f:'D'},{w:'Atractivo',f:'I'}]},
+  {words:[{w:'Cauteloso',f:'C'},{w:'Determinado',f:'D'},{w:'Convincente',f:'I'},{w:'Bonachón',f:'S'}]},
+  {words:[{w:'Dócil',f:'C'},{w:'Atrevido',f:'D'},{w:'Leal',f:'S'},{w:'Encantador',f:'I'}]},
+  {words:[{w:'Dispuesto',f:'S'},{w:'Deseoso',f:'D'},{w:'Consecuente',f:'C'},{w:'Entusiasta',f:'I'}]},
+  {words:[{w:'Fuerza de voluntad',f:'D'},{w:'Mente abierta',f:'C'},{w:'Complaciente',f:'S'},{w:'Animoso',f:'I'}]},
+  {words:[{w:'Confiado',f:'I'},{w:'Simpatizador',f:'S'},{w:'Tolerante',f:'C'},{w:'Afirmativo',f:'D'}]},
+  {words:[{w:'Ecuánime',f:'S'},{w:'Preciso',f:'C'},{w:'Nervioso',f:'D'},{w:'Jovial',f:'I'}]},
+  {words:[{w:'Disciplinado',f:'C'},{w:'Generoso',f:'I'},{w:'Animoso',f:'D'},{w:'Persistente',f:'S'}]},
+  {words:[{w:'Competitivo',f:'D'},{w:'Alegre',f:'I'},{w:'Considerado',f:'S'},{w:'Armonioso',f:'C'}]},
+  {words:[{w:'Admirable',f:'I'},{w:'Bondadoso',f:'S'},{w:'Resignado',f:'C'},{w:'Carácter firme',f:'D'}]},
+  {words:[{w:'Obediente',f:'S'},{w:'Quisquilloso',f:'C'},{w:'Inconquistable',f:'D'},{w:'Juguetón',f:'I'}]},
+  {words:[{w:'Respetuoso',f:'C'},{w:'Emprendedor',f:'D'},{w:'Optimista',f:'I'},{w:'Servicial',f:'S'}]},
+  {words:[{w:'Valiente',f:'D'},{w:'Inspirador',f:'I'},{w:'Sumiso',f:'S'},{w:'Tímido',f:'C'}]},
+  {words:[{w:'Adaptable',f:'C'},{w:'Disputador',f:'D'},{w:'Indiferente',f:'S'},{w:'Sangre liviana',f:'I'}]},
+  {words:[{w:'Amiguero',f:'I'},{w:'Paciente',f:'S'},{w:'Confianza en sí mismo',f:'D'},{w:'Mesurado para hablar',f:'C'}]},
+  {words:[{w:'Conforme',f:'S'},{w:'Confiable',f:'I'},{w:'Pacífico',f:'C'},{w:'Positivo',f:'D'}]},
+  {words:[{w:'Aventurero',f:'D'},{w:'Receptivo',f:'I'},{w:'Cordial',f:'S'},{w:'Moderado',f:'C'}]},
+  {words:[{w:'Indulgente',f:'S'},{w:'Esteta',f:'I'},{w:'Vigoroso',f:'D'},{w:'Sociable',f:'C'}]},
+  {words:[{w:'Parlanchín',f:'I'},{w:'Controlado',f:'C'},{w:'Convencional',f:'S'},{w:'Decisivo',f:'D'}]},
+  {words:[{w:'Cohibido',f:'C'},{w:'Exacto',f:'S'},{w:'Franco',f:'D'},{w:'Buen compañero',f:'I'}]},
+  {words:[{w:'Diplomático',f:'C'},{w:'Audaz',f:'D'},{w:'Refinado',f:'I'},{w:'Satisfecho',f:'S'}]},
+  {words:[{w:'Inquieto',f:'D'},{w:'Popular',f:'I'},{w:'Buen vecino',f:'S'},{w:'Devoto',f:'C'}]}
 ];
+
+function scoreTest(answers) {
+  const M = {D:0, I:0, S:0, C:0};
+  const L = {D:0, I:0, S:0, C:0};
+  for (let g = 0; g < 24; g++) {
+    const ans = answers[g];
+    if (!ans) continue;
+    const gData = GROUPS[g].words;
+    if (ans.plus !== null) {
+      const f = gData[ans.plus].f;
+      M[f] = (M[f] || 0) + 1;
+    }
+    if (ans.minus !== null) {
+      const f = gData[ans.minus].f;
+      L[f] = (L[f] || 0) + 1;
+    }
+  }
+  const T = {
+    D: M.D - L.D,
+    I: M.I - L.I,
+    S: M.S - L.S,
+    C: M.C - L.C
+  };
+  return { M, L, T };
+}
+
 let cid = null;
 let cur = 0, ans = {};
 
@@ -142,9 +190,9 @@ async function doRegister() {
 function showGroup() {
   const g = GROUPS[cur];
   let h = '';
-  g.words.forEach((w, i) => {
+  g.words.forEach((wObj, i) => {
     h += `<div class="row">
-      <div>${w}</div>
+      <div>${wObj.w}</div>
       <div class="opt-btn ${ans[cur]?.plus===i?'active':''}" onclick="sel(${i},'plus')">+</div>
       <div class="opt-btn ${ans[cur]?.minus===i?'active':''}" onclick="sel(${i},'minus')">-</div>
     </div>`;
@@ -179,11 +227,18 @@ async function next() {
     btn.disabled = true;
     btn.textContent = 'Guardando...';
 
+    const scores = scoreTest(ans);
+
     try {
       const res = await fetch('/api/results', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ candidateId: cid, testName: 'CLEAVER', answers: ans, scores: { completed: true } })
+        body: JSON.stringify({ 
+          candidateId: cid, 
+          testName: 'CLEAVER', 
+          answers: ans, 
+          scores: { ...scores, completed: true } 
+        })
       });
       if(res.ok) {
         document.getElementById('vEval').classList.add('hidden');

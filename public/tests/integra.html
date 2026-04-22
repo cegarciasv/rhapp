@@ -440,26 +440,226 @@ function showView(id){
   if(id==='dashboard'||id==='candidates'||id==='history') document.getElementById('app').classList.remove('hidden');
 }
 
+const QUESTIONS = [
+  // CLUSTER 1: Honestidad normativa
+  {id:1,cluster:1,type:'likert',inv:false,text:"Tomar artículos pequeños de la empresa no debería considerarse grave."},
+  {id:2,cluster:1,type:'likert',inv:false,text:"Si nadie resulta afectado, romper una regla puede ser aceptable."},
+  {id:3,cluster:1,type:'likert',inv:false,text:"Decir toda la verdad en el trabajo no siempre conviene."},
+  {id:4,cluster:1,type:'likert',inv:false,text:"Ocultar un error menor puede evitar problemas innecesarios."},
+  {id:5,cluster:1,type:'likert',inv:false,text:"La mayoría de personas aprovecharía una oportunidad indebida si no la descubren."},
+  {id:6,cluster:1,type:'likert',inv:false,text:"Ser honesto a veces perjudica más de lo que ayuda."},
+  {id:7,cluster:1,type:'likert',inv:false,text:"Si un resultado es bueno, el medio utilizado pasa a segundo plano."},
+  {id:8,cluster:1,type:'likert',inv:false,text:"Es válido omitir información si eso evita una sanción."},
+  {id:9,cluster:1,type:'likert',inv:false,text:"Las reglas excesivas están para flexibilizarse."},
+  {id:10,cluster:1,type:'likert',inv:false,text:"Un colaborador productivo merece más tolerancia ante pequeñas faltas."},
+  // CLUSTER 2: Conductas pasadas
+  {id:11,cluster:2,type:'frequency',inv:false,text:"He ocultado un error para evitar consecuencias."},
+  {id:12,cluster:2,type:'frequency',inv:false,text:"He usado tiempo de trabajo para asuntos personales sin autorización."},
+  {id:13,cluster:2,type:'frequency',inv:false,text:"He mentido para proteger mi imagen laboral."},
+  {id:14,cluster:2,type:'frequency',inv:false,text:"He dejado de reportar una irregularidad porque no quería involucrarme."},
+  {id:15,cluster:2,type:'frequency',inv:false,text:"He encubierto a un compañero ante una falta."},
+  {id:16,cluster:2,type:'frequency',inv:false,text:"He alterado u omitido información en un reporte."},
+  {id:17,cluster:2,type:'frequency',inv:false,text:"He usado recursos de la empresa para beneficio propio."},
+  {id:18,cluster:2,type:'frequency',inv:false,text:"He justificado internamente una acción incorrecta porque \"todos lo hacen\"."},
+  {id:19,cluster:2,type:'frequency',inv:false,text:"He omitido devolver algo que no me pertenecía."},
+  {id:20,cluster:2,type:'frequency',inv:false,text:"He dado una explicación falsa para evitar una llamada de atención."},
+  // CLUSTER 3: Robo y apropiación
+  {id:21,cluster:3,type:'likert',inv:false,text:"Llevarse material sobrante no es realmente robar."},
+  {id:22,cluster:3,type:'likert',inv:false,text:"Usar combustible, equipo o inventario para asuntos personales puede justificarse."},
+  {id:23,cluster:3,type:'likert',inv:false,text:"Si la empresa no controla bien sus activos, comparte parte de la responsabilidad."},
+  {id:24,cluster:3,type:'likert',inv:false,text:"Tomar dinero en forma temporal y reponerlo después no es tan grave."},
+  {id:25,cluster:3,type:'likert',inv:false,text:"Aprovechar errores de caja o inventario puede verse como oportunidad."},
+  {id:26,cluster:3,type:'likert',inv:false,text:"Manipular un registro pequeño no debería considerarse fraude."},
+  {id:27,cluster:3,type:'likert',inv:false,text:"El robo interno suele exagerarse más de lo debido."},
+  {id:28,cluster:3,type:'likert',inv:false,text:"Es entendible que alguien tome algo si siente que la empresa le debe."},
+  {id:29,cluster:3,type:'likert',inv:true,text:"Alterar kilometraje, viáticos o comprobantes es una falta seria."},
+  {id:30,cluster:3,type:'likert',inv:true,text:"Beneficiarse de errores administrativos es deshonesto."},
+  // CLUSTER 4: Mentira y veracidad
+  {id:31,cluster:4,type:'likert',inv:false,text:"A veces una mentira protege mejor que la verdad."},
+  {id:32,cluster:4,type:'likert',inv:false,text:"Mentir en temas pequeños no tiene impacto real."},
+  {id:33,cluster:4,type:'likert',inv:false,text:"Es preferible dar una versión favorable aunque no sea exacta."},
+  {id:34,cluster:4,type:'frequency',inv:false,text:"He dicho algo falso para evitar un problema en el trabajo."},
+  {id:35,cluster:4,type:'frequency',inv:false,text:"He ajustado una explicación para verme mejor ante un jefe."},
+  {id:36,cluster:4,type:'likert',inv:false,text:"La verdad completa rara vez es necesaria."},
+  {id:37,cluster:4,type:'likert',inv:false,text:"Es más importante evitar el conflicto que ser totalmente sincero."},
+  {id:38,cluster:4,type:'frequency',inv:false,text:"He exagerado resultados o avances en mis reportes."},
+  {id:39,cluster:4,type:'likert',inv:false,text:"Admitir errores debilita la imagen profesional."},
+  {id:40,cluster:4,type:'likert',inv:true,text:"Prefiero asumir consecuencias antes que mentir."},
+  // CLUSTER 5: Responsabilidad
+  {id:41,cluster:5,type:'likert',inv:true,text:"Cumplo compromisos aunque nadie me supervise."},
+  {id:42,cluster:5,type:'likert',inv:true,text:"Si prometo algo, lo termino."},
+  {id:43,cluster:5,type:'likert',inv:true,text:"Suelo llegar preparado a mis responsabilidades."},
+  {id:44,cluster:5,type:'likert',inv:true,text:"Puedo confiar en mí mismo para actuar correctamente bajo presión."},
+  {id:45,cluster:5,type:'likert',inv:false,text:"Cuando no hay seguimiento, bajo mis estándares de trabajo."},
+  {id:46,cluster:5,type:'likert',inv:true,text:"Si cometo un error, lo informo a quien corresponde."},
+  {id:47,cluster:5,type:'likert',inv:true,text:"Mantengo la calidad aunque el trabajo sea repetitivo."},
+  {id:48,cluster:5,type:'likert',inv:true,text:"Entrego a tiempo incluso cuando la tarea no me gusta."},
+  {id:49,cluster:5,type:'likert',inv:true,text:"Me hago responsable de mis decisiones."},
+  {id:50,cluster:5,type:'likert',inv:false,text:"Necesito supervisión frecuente para mantenerme enfocado."},
+  // CLUSTER 6: Desempeño
+  {id:51,cluster:6,type:'likert',inv:true,text:"Mantengo productividad constante durante la jornada laboral."},
+  {id:52,cluster:6,type:'likert',inv:true,text:"Cumplo procedimientos incluso cuando no son visibles."},
+  {id:53,cluster:6,type:'likert',inv:true,text:"El orden y la disciplina influyen positivamente en mi desempeño."},
+  {id:54,cluster:6,type:'likert',inv:false,text:"Me distraigo fácilmente y dejo tareas incompletas."},
+  {id:55,cluster:6,type:'likert',inv:false,text:"Hago lo mínimo indispensable cuando nadie evalúa mi trabajo."},
+  {id:56,cluster:6,type:'likert',inv:true,text:"Me esfuerzo por corregir desviaciones en lugar de ocultarlas."},
+  {id:57,cluster:6,type:'likert',inv:false,text:"Mi trabajo suele requerir que otros corrijan mis omisiones."},
+  {id:58,cluster:6,type:'likert',inv:true,text:"Priorizo terminar bien sobre terminar rápido."},
+  {id:59,cluster:6,type:'likert',inv:true,text:"Sigo instrucciones con precisión."},
+  {id:60,cluster:6,type:'likert',inv:false,text:"Los detalles rara vez importan si el resultado general sale bien."},
+  // CLUSTER 7: Personalidad/Autocontrol
+  {id:61,cluster:7,type:'likert',inv:false,text:"Actúo impulsivamente cuando me enojo."},
+  {id:62,cluster:7,type:'likert',inv:false,text:"Me cuesta resistir una oportunidad que me beneficia."},
+  {id:63,cluster:7,type:'likert',inv:true,text:"Tolero bien la frustración sin romper reglas."},
+  {id:64,cluster:7,type:'likert',inv:false,text:"Me impaciento cuando los procesos son lentos."},
+  {id:65,cluster:7,type:'likert',inv:false,text:"Bajo presión, puedo perder el control."},
+  {id:66,cluster:7,type:'likert',inv:true,text:"Pienso antes de actuar."},
+  {id:67,cluster:7,type:'likert',inv:false,text:"Me aburro rápido de cumplir normas repetitivas."},
+  {id:68,cluster:7,type:'likert',inv:true,text:"Soy disciplinado incluso en tareas poco agradables."},
+  {id:69,cluster:7,type:'likert',inv:false,text:"Cuando me siento tratado injustamente, justifico romper reglas."},
+  {id:70,cluster:7,type:'likert',inv:false,text:"Mi autocontrol depende mucho del ambiente."},
+  // CLUSTER 8: Soborno/Fraude
+  {id:71,cluster:8,type:'likert',inv:false,text:"Aceptar un favor personal de un proveedor no siempre afecta la objetividad."},
+  {id:72,cluster:8,type:'likert',inv:false,text:"Una atención o regalo puede ser normal en los negocios."},
+  {id:73,cluster:8,type:'likert',inv:false,text:"Si un jefe lo pide, ajustar un dato puede justificarse."},
+  {id:74,cluster:8,type:'likert',inv:false,text:"Favorecer a alguien cercano no siempre es corrupción."},
+  {id:75,cluster:8,type:'frequency',inv:false,text:"He callado ante posibles conflictos de interés."},
+  {id:76,cluster:8,type:'likert',inv:false,text:"Maquillar un indicador para proteger al equipo puede entenderse."},
+  {id:77,cluster:8,type:'likert',inv:true,text:"Un beneficio privado recibido por una decisión laboral es inaceptable."},
+  {id:78,cluster:8,type:'likert',inv:true,text:"Cambiar fechas, cifras o reportes para \"ayudar\" sigue siendo incorrecto."},
+  {id:79,cluster:8,type:'likert',inv:false,text:"En posiciones de autoridad, los resultados pueden pesar más que el procedimiento."},
+  {id:80,cluster:8,type:'likert',inv:false,text:"La presión por metas puede empujar decisiones éticamente grises."},
+  // CLUSTER 9: Incumplimiento
+  {id:81,cluster:9,type:'likert',inv:false,text:"Si una norma dificulta el trabajo, puede ignorarse."},
+  {id:82,cluster:9,type:'likert',inv:true,text:"Antes de decidir, considero consecuencias éticas."},
+  {id:83,cluster:9,type:'likert',inv:false,text:"Prefiero una solución práctica aunque no sea la correcta."},
+  {id:84,cluster:9,type:'likert',inv:true,text:"Cuando decido, evalúo el impacto en otros."},
+  {id:85,cluster:9,type:'likert',inv:false,text:"El incumplimiento pequeño rara vez genera daño real."},
+  {id:86,cluster:9,type:'likert',inv:true,text:"Si una instrucción parece equivocada, debo cuestionarla."},
+  {id:87,cluster:9,type:'likert',inv:false,text:"A veces conviene obedecer aunque la decisión no sea correcta."},
+  {id:88,cluster:9,type:'likert',inv:true,text:"Tomo decisiones pensando en el largo plazo."},
+  // CLUSTER 10: Simulación (Q89-98)
+  {id:89,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he mentido en mi vida."},
+  {id:90,cluster:10,type:'likert',inv:false,sim:true,text:"Siempre he cumplido todas las reglas sin excepción."},
+  {id:91,cluster:10,type:'likert',inv:false,sim:true,text:"Jamás he cometido un error que afecte a otra persona."},
+  {id:92,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he sentido tentación de aprovechar una oportunidad indebida."},
+  {id:93,cluster:10,type:'likert',inv:false,sim:true,text:"Siempre actúo correctamente incluso en cualquier situación extrema."},
+  {id:94,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he exagerado una explicación."},
+  {id:95,cluster:10,type:'likert',inv:false,sim:true,text:"Todas mis decisiones han sido completamente éticas."},
+  {id:96,cluster:10,type:'likert',inv:false,sim:true,text:"Jamás he ocultado información."},
+  {id:97,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he sentido enojo en el trabajo."},
+  {id:98,cluster:10,type:'likert',inv:false,sim:true,text:"Nunca he dejado algo para después."},
+  // CLUSTER 11: Juicio situacional
+  {id:99,cluster:11,type:'situational',inv:false,text:"Un proveedor te ofrece un beneficio personal por acelerar un trámite.",
+    opts:["Rechazo y reporto a mi superior","Rechazo y no reporto","Escucho la propuesta antes de decidir","Acepto si no afecta el resultado"]},
+  {id:100,cluster:11,type:'situational',inv:false,text:"Detectas que un compañero alteró un registro menor.",
+    opts:["Reporto y documento formalmente","Lo confronto directamente y exijo corrección","No me involucro en el asunto","Lo dejo pasar porque es poco significativo"]},
+];
+
+const LIKERT_LABELS = ["Totalmente en desacuerdo","En desacuerdo","Neutral","De acuerdo","Totalmente de acuerdo"];
+const FREQ_LABELS = ["Nunca","Rara vez","Algunas veces","Varias veces","Frecuentemente"];
+
+function calcScores(responses){
+  // Adjusted score per question: 1-5 scale, higher=better integrity
+  const adj={};
+  QUESTIONS.forEach(q=>{
+    if(q.cluster===10||q.cluster===11)return;
+    const r = responses[q.id];
+    if(r===undefined)return;
+    adj[q.id]=q.inv?r:(6-r);
+  });
+
+  // Simulation detection
+  const simQs=QUESTIONS.filter(q=>q.sim);
+  const simVals=simQs.map(q=>responses[q.id]).filter(v=>v!==undefined);
+  const simAvg=simVals.length?simVals.reduce((a,b)=>a+b,0)/simVals.length:0;
+  const simulationFlag=simAvg>4.4;
+
+  // Cluster scores (0-100)
+  const clusterScores={};
+  for(let c=1;c<=9;c++){
+    const cqs=QUESTIONS.filter(q=>q.cluster===c);
+    const vals=cqs.map(q=>adj[q.id]).filter(v=>v!==undefined);
+    if(vals.length)clusterScores[c]=(vals.reduce((a,b)=>a+b,0)/vals.length-1)/4*100;
+  }
+
+  // Cluster 11: Situational judgment
+  const sitQs=QUESTIONS.filter(q=>q.cluster===11);
+  const sitScores=sitQs.map(q=>{
+    const r=responses[q.id];
+    if(r===undefined)return null;
+    return [4,3,1,0][r]/4*100;
+  }).filter(v=>v!==null);
+  if(sitScores.length)clusterScores[11]=sitScores.reduce((a,b)=>a+b,0)/sitScores.length;
+
+  let global=0, count=0;
+  Object.values(clusterScores).forEach(v => { global += v; count++; });
+  const finalScore = count ? global / count : 0;
+
+  return { finalScore, clusterScores, simulationFlag };
+}
+
 function startEval(){ showView('eval'); renderQuestion(0); }
 
 function renderQuestion(idx){
   evalState.currentIdx = idx;
   const q = QUESTIONS[idx];
-  document.getElementById('evalQText').textContent = q.text;
-  // Render options based on type... (simplified for brevity)
+  document.getElementById('evalQText').textContent = `${idx + 1}. ${q.text}`;
+  
+  let optHtml = '';
+  if(q.type==='likert' || q.type==='frequency'){
+    const labels = q.type==='likert' ? LIKERT_LABELS : FREQ_LABELS;
+    const cur = evalState.responses[q.id];
+    optHtml = `<div class="likert-row" style="display:flex; gap:10px; margin-top:20px;">`;
+    [1,2,3,4,5].forEach(v => {
+      optHtml += `<button class="l-opt ${cur===v?'sel':''}" onclick="selectAnswer(${q.id},${v})" style="flex:1; padding:15px; border:1px solid #ddd; border-radius:8px; background:${cur===v?'#1a4480':'white'}; color:${cur===v?'white':'black'}">
+        <span style="display:block; font-weight:bold">${v}</span>
+        <span style="font-size:10px">${labels[v-1]}</span>
+      </button>`;
+    });
+    optHtml += `</div>`;
+  } else if(q.type==='situational'){
+    const cur = evalState.responses[q.id];
+    optHtml = `<div class="sit-opts" style="display:flex; flex-direction:column; gap:10px; margin-top:20px;">`;
+    q.opts.forEach((o,i) => {
+      optHtml += `<button class="s-opt ${cur===i?'sel':''}" onclick="selectAnswer(${q.id},${i})" style="padding:15px; border:1px solid #ddd; border-radius:8px; text-align:left; background:${cur===i?'#1a4480':'white'}; color:${cur===i?'white':'black'}">
+        <strong>${'ABCD'[i]}.</strong> ${o}
+      </button>`;
+    });
+    optHtml += `</div>`;
+  }
+  document.getElementById('evalOptions').innerHTML = optHtml;
+
+  const btn = document.getElementById('btnNext');
+  btn.textContent = idx === QUESTIONS.length - 1 ? 'Finalizar' : 'Siguiente →';
+  
+  const prog = ((idx + 1) / QUESTIONS.length) * 100;
+  document.getElementById('evalProgFill').style.width = prog + '%';
+}
+
+function selectAnswer(qId, val){
+  evalState.responses[qId] = val;
+  renderQuestion(evalState.currentIdx);
 }
 
 async function evalNext(){
-  const btn = document.getElementById('btnNext');
-  const originalText = btn.textContent;
+  const idx = evalState.currentIdx;
+  const q = QUESTIONS[idx];
   
-  // Save response and move to next or submit
-  if(evalState.currentIdx === QUESTIONS.length - 1){
-    const answeredCount = Object.keys(evalState.responses).length;
-    // En produccion se validaría que answeredCount === QUESTIONS.length
+  if(evalState.responses[q.id] === undefined) return alert("Seleccione una opción");
 
+  if(idx === QUESTIONS.length - 1){
+    const answeredCount = Object.keys(evalState.responses).length;
+    if (answeredCount < QUESTIONS.length) {
+       return alert(`Faltan ${QUESTIONS.length - answeredCount} preguntas por contestar.`);
+    }
+
+    const btn = document.getElementById('btnNext');
+    const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Guardando...';
+
+    const scores = calcScores(evalState.responses);
 
     try {
       const res = await fetch('/api/results', {
@@ -469,7 +669,7 @@ async function evalNext(){
           candidateId, 
           testName: 'INTEGRA', 
           answers: evalState.responses, 
-          scores: { finalScore: 85, completed: true } 
+          scores: { ...scores, completed: true } 
         })
       });
       if(res.ok) {
@@ -487,12 +687,9 @@ async function evalNext(){
       btn.textContent = originalText;
     }
   } else {
-    renderQuestion(evalState.currentIdx + 1);
+    renderQuestion(idx + 1);
   }
 }
-
-// Mocked questions for the demo logic
-const QUESTIONS = [{id:1, text:"Pregunta 1..."}, {id:2, text:"Pregunta 2..."}];
 
 window.onload = init;
 </script>

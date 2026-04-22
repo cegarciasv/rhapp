@@ -79,9 +79,64 @@ hr { border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0; }
 
 <script>
 const Q = [
-  {t:"Usted es el jefe de un grupo y uno de sus subordinados no está trabajando bien:", o:["Hablar con él en privado","Darle más trabajo","Ignorarlo","Despedirlo"]},
-  {t:"Si un amigo le pide dinero prestado y usted sabe que no se lo va a pagar:", o:["Prestarle el dinero","Decirle que no tiene","Darle una parte","Evitar el tema"]}
-]; // Truncated for brevity
+  {t:"Se le ha asignado un puesto en una gran empresa. La mejor forma de establecer relaciones amistosas y cordiales con sus nuevos compañeros será:",o:["Evitando tomar nota de los errores en que incurran.","Hablando bien de ellos al jefe.","Mostrando interés en el trabajo de ellos.","Pidiéndoles les permitan hacer los trabajos que usted puede hacer mejor."]},
+  {t:"Tiene usted un empleado muy eficiente pero que constantemente se queja del trabajo; sus quejas producen mal efecto en los demás. Lo mejor sería:",o:["Pedir a los demás empleados que no hagan caso.","Averiguar la causa de esa actitud y procurar su modificación.","Cambiarlo de departamento donde quede a cargo de otro jefe.","Permitirle planear lo más posible acerca de su trabajo."]},
+  {t:"Un empleado de 60 años de edad que ha sido leal a la empresa durante 25 años se queja del exceso de trabajo. Lo mejor sería:",o:["Decirle que vuelva a su trabajo porque si no será desvinculado.","Despedirlo, substituyéndolo por alguien más joven.","Darle un aumento de sueldo que evite que continúe quejándose.","Aminorar su trabajo."]},
+  {t:"Uno de los socios, sin autoridad sobre usted, le ordena haga algo en forma bien distinta de lo que planeaba. ¿Qué haría usted?",o:["Acatar la orden y no armar mayor revuelo.","Ignorar las indicaciones y hacerlo según había planeado.","Decirle que esto no es asunto suyo y que usted hará las cosas a su modo.","Decirle que lo haga él mismo."]},
+  {t:"Usted visita a un amigo íntimo que ha estado enfermo por algún tiempo. Lo mejor sería:",o:["Platicarle sus diversiones recientes.","Platicarle nuevas cosas referentes a sus amigos mutuos.","Comentar su enfermedad.","Enfatizar lo mucho que le apena verle enfermo."]},
+  {t:"Trabaja usted en una industria y su jefe quiere que tome un curso relacionado con su carrera pero compatible con el horario de trabajo. Lo mejor sería:",o:["Continuar normalmente su carrera e informar al jefe si pregunta.","Explicar la situación y obtener su opinión en cuanto a la importancia relativa de ambas situaciones.","Dejar la escuela en relación a los intereses del trabajo.","Asistir en forma alterna y no hacer comentarios."]},
+  {t:"Un agente viajero con 15 años de antigüedad decide, presionado por su familia, sentar raíces. Se le cambia a las oficinas generales. Es de esperar que:",o:["Guste de los descansos del trabajo de oficina.","Se sienta inquieto por la rutina de la oficina.","Busque otro trabajo.","Resulte muy ineficiente en el trabajo de oficina."]},
+  {t:"Tiene dos invitados a cenar: uno radical y otro conservador. Surge una acalorada discusión política. Lo mejor sería:",o:["Tomar partido.","Intentar cambiar de tema.","Intervenir dando sus puntos de vista y mostrar donde ambos pecan de extremosos.","Pedir que cambien de tema para evitar mayor discusión."]},
+  {t:"Un joven invita a una dama al teatro; al llegar se percata de que ha olvidado la cartera. Sería mejor:",o:["Tratar de obtener boletos dejando el reloj en prenda.","Buscar a algún amigo a quien pedir prestado.","Decidir de acuerdo con ella lo procedente.","Dar una excusa plausible para ir a casa por dinero."]},
+  {t:"Usted ha tenido experiencia como vendedor y acaba de conseguir empleo en una tienda. La mejor forma de relacionarse con los empleados del departamento sería:",o:["Permitirles hacer la mayoría de las ventas por unos días mientras observa sus métodos.","Tratar de instituir los métodos que anteriormente le fueron útiles.","Adaptarse a las condiciones y aceptar consejos de sus compañeros.","Pedir al jefe todo el consejo necesario."]},
+  {t:"Es usted un joven empleado que va a comer con una maestra a quien conoce superficialmente. Lo mejor sería iniciar la conversación acerca de:",o:["Algún tópico de actualidad.","Algún aspecto interesante de su propio trabajo.","Las tendencias actuales en el terreno docente.","Las sociedades de padres de familia."]},
+  {t:"Una señora que por largo tiempo ha dirigido trabajos benéficos se cambia a otra población. Es de esperarse que ella:",o:["Se sienta insatisfecha de su nuevo hogar.","Se interese más por los trabajos domésticos.","Intervenga poco a poco en la vida de la comunidad, continuando sus intereses.","Adopte nuevos intereses en la nueva comunidad."]},
+  {t:"Quiere pedirle un favor a un conocido con quien tiene poca confianza. La mejor forma de lograrlo sería:",o:["Haciéndole creer que será él quien se beneficie más.","Enfatizando la importancia que para usted tiene que se le conceda.","Ofrecer algo de retribución.","Decir lo que desea en forma breve indicando los motivos."]},
+  {t:"Un joven de 24 años gasta bastante tiempo y dinero en diversiones. Probablemente cambie sus costumbres si:",o:["Sus hábitos nocturnos lesionan su salud.","Sus amigos enfatizan el daño que se hace a sí mismo.","Su jefe se da cuenta y lo previene.","Se interesa en el desarrollo de alguna fase de su trabajo."]},
+  {t:"Tras de haber hecho muchos favores a un amigo, este empieza a dar por hecho que usted resolverá todas sus dificultades. La mejor forma de readaptar la situación sin ofenderle sería:",o:["Explicar el daño que se está causando.","Pedir a un amigo mutuo que trate de arreglar las cosas.","Ayudarle una vez más pero de tal manera que sienta que mejor hubiera sido no haberlo solicitado.","Darle una excusa para no seguir ayudándole."]},
+  {t:"Una persona recién ascendida a un mejor puesto de autoridad lograría mejor sus metas y la buena voluntad de los empleados:",o:["Tratando de que cada empleado entienda qué es la verdadera eficiencia.","Ascendiendo cuanto antes a quienes considere lo merezcan.","Preguntando confidencialmente a cada empleado en cuanto a los cambios que estiman necesarios.","Siguiendo los sistemas del anterior jefe y gradualmente hacer los cambios necesarios."]},
+  {t:"Vive a 15 km. del centro y ha ofrecido llevar de regreso a un amigo a las 16:00. Él espera desde las 15:00 y usted se entera que no podrá salir antes de las 17:30. Sería mejor:",o:["Pedirle un taxi.","Explicarle y dejar que él decida.","Pedirle que espere hasta las 17:30 horas.","Proponerle que se lleve su auto."]},
+  {t:"Es usted un ejecutivo y dos de sus empleados se llevan mal; ambos son eficientes. Lo mejor sería:",o:["Despedir al menos eficiente.","Dar trabajo en común que a ambos interese.","Hacerles ver el daño que se hacen.","Darles trabajos distintos."]},
+  {t:"El señor González lleva 10 años en un puesto subordinado, trabaja callado y confidencialmente. De obtener trabajo en otra empresa, muy probablemente:",o:["Asuma fácilmente responsabilidad como supervisor.","Haga ver de inmediato su valor.","Sea lento para abrirse las necesarias oportunidades.","Renuncie ante la más ligera crítica de su trabajo."]},
+  {t:"Va usted a ser maestro de ceremonias en una cena el próximo sábado; ese día, por enfermedad familiar, se ve imposibilitado para asistir. Lo mejor sería:",o:["Cancelar la cena.","Encontrar quien lo sustituya.","Detallar los planes que tenía y evitarlos.","Enviar una nota explicando la causa de su ausencia."]},
+  {t:"En igualdad de circunstancias, el empleado que mejor se adapta a un nuevo puesto es aquel que:",o:["Ha sido bueno en puestos anteriores.","Ha tenido éxito durante 10 años en su puesto.","Tiene sus propias ideas e invariablemente se rige por ellas.","Cuenta con una buena recomendación de su jefe anterior."]},
+  {t:"Un conocido le platica acerca de una afición que él tiene; su conversación le aburre. Lo mejor sería:",o:["Escuchar de manera cortés, pero aburrida.","Escuchar con fingido interés.","Decirle francamente que el tema no le interesa.","Mirar el reloj con impaciencia."]},
+  {t:"Es usted un empleado ordinario en una oficina grande. El jefe entra cuando usted lee en vez de trabajar. Lo mejor sería:",o:["Doblar el periódico y volver al trabajo.","Pretender que obtiene recortes necesarios al trabajo.","Tratar de interesar al jefe leyéndole un encabezado importante.","Seguir leyendo sin mostrar embarazo."]},
+  {t:"Es usted un maestro de primaria. Camino a la escuela, algunos alumnos lanzan bolas de nieve. Desde el punto de vista de la buena administración escolar, usted debería:",o:["Castigarles ahí mismo por su indisciplina.","Decirles que de volverlo a hacer los castigará.","Pasar la queja a sus padres.","Tomarlo como broma y no hacer caso al respecto."]},
+  {t:"Preside el Comité de Mejoras Materiales en su colonia; las últimas reuniones han sido de escasa asistencia. Se mejoraría la asistencia:",o:["Visitando vecinos prominentes explicándoles los problemas.","Avisando de un programa interesante para la reunión.","Poniendo avisos en los lugares públicos.","Enviando avisos personales."]},
+  {t:"Salinas, eficiente pero de los que 'todo lo saben', critica a Montoya; el jefe opina que la idea de Montoya ahorra tiempo. Probablemente Salinas:",o:["Pida otro trabajo al jefe.","Lo haga a su modo sin comentarios.","Lo haga con Montoya, pero siga criticándolo.","Lo haga con Montoya, pero mal a propósito."]},
+  {t:"Un hombre de 64 años tuvo algún éxito cuando joven como político; sus modos directos le han impedido descollar los últimos 20 años. Lo más probable es que:",o:["Persista en su manera de ser.","Cambie para lograr éxito.","Forme un nuevo partido político.","Abandone la política por inmoral."]},
+  {t:"Es usted un joven que encuentra en la calle a una mujer de más edad, a quien apenas conoce, y que parece haber estado llorando. Lo mejor sería:",o:["Preguntarle por qué está triste.","Pasarle el brazo por el hombro y consolarla.","Simular no advertir su pena.","Simular no haberla visto."]},
+  {t:"Un compañero flojea de tal manera que a usted le toca más trabajo del que le corresponde. La mejor forma de conservar las relaciones sería:",o:["Explicar el caso al jefe cortésmente.","Cortésmente indicarle que debe hacer lo que le corresponde o que usted se quejará con el jefe.","Hacer tanto como pueda eficientemente y no decir nada del caso al jefe.","Hacer lo suyo y dejar pendiente lo que el compañero no haga."]},
+  {t:"Se le ha asignado un puesto ejecutivo en una organización. Para ganar el respeto y la admiración de sus subordinados, sin perjuicio de sus planes, habría que:",o:["Ceder en todos los pequeños puntos posibles.","Tratar de convencerlos de todas sus ideas.","Ceder parcialmente en todas las cuestiones importantes.","Abogar por muchas reformas."]}
+];
+
+// Answer key (0=a, 1=b, 2=c, 3=d)
+const KEYS = [2,1,3,1,1,1,1,1,2,2,0,2,3,3,3,3,1,3,2,1,0,0,0,3,1,2,0,2,0,3];
+
+const DIMS = [
+  {k:'HS',   name:'Habilidad en Supervisión',                             abbr:'H.S.',      qi:[1,2,15,17,23,29]},
+  {k:'CDRH', name:'Capacidad de Decisión en Relaciones Humanas',          abbr:'C.D.R.H.',  qi:[3,5,19,22,28]},
+  {k:'CEPI', name:'Capacidad de Evaluación de Problemas Interpersonales', abbr:'C.E.P.I.',  qi:[6,8,11,13,18,19,25,26]},
+  {k:'HERI', name:'Habilidad para Establecer Relaciones Interpersonales', abbr:'H.E.R.I.',  qi:[0,9,10,12,24]},
+  {k:'SCTRI',name:'Sentido Común y Tacto en Relaciones Interpersonales',  abbr:'S.C.T.R.I.',qi:[4,7,14,16,21,27]}
+];
+
+function calcScore(a){
+  var ds={};
+  for(var d=0;d<DIMS.length;d++){
+    var dim=DIMS[d];
+    var c=0;
+    for(var q=0;q<dim.qi.length;q++) {
+       if(a[dim.qi[q]]===KEYS[dim.qi[q]]) c++;
+    }
+    ds[dim.k]={correct:c,max:dim.qi.length, pct: Math.round((c/dim.qi.length)*100)};
+  }
+  var tot=0;
+  for(var k in ds) tot+=ds[k].pct;
+  return{ds:ds, total:Math.round(tot/5)};
+}
+
 let cid = null;
 let cur = 0, ans = {};
 
@@ -163,6 +218,8 @@ async function next() {
     btn.disabled = true;
     btn.textContent = 'Guardando...';
 
+    const scores = calcScore(ans);
+
     try {
       const res = await fetch('/api/results', {
         method: 'POST',
@@ -171,7 +228,7 @@ async function next() {
           candidateId: cid, 
           testName: 'MOSS', 
           answers: ans, 
-          scores: { completed: true, total: Math.round((answeredCount/Q.length)*100) } 
+          scores: { ...scores, completed: true } 
         })
       });
       if(res.ok) {
