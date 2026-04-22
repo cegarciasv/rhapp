@@ -17,7 +17,7 @@ export default function Home() {
   ];
 
   const handleTestSelect = (testId: string) => {
-    window.location.href = `/tests/${testId}.html`;
+    window.location.assign(`/tests/${testId}.html`);
   };
 
   return (

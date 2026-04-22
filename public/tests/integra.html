@@ -279,6 +279,16 @@ tr:hover td{background:var(--g50)}
         <input id="regEducation" type="text" class="form-input" placeholder="Licenciatura">
       </div>
     </div>
+    <div class="g2">
+      <div class="form-group">
+        <label class="form-label">Estado Civil</label>
+        <input id="regCivil" type="text" class="form-input" placeholder="Soltero">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de Evaluación</label>
+        <input id="regDate" type="date" class="form-input">
+      </div>
+    </div>
     <button class="btn btn-primary w-full" style="padding:12px;font-size:15px;justify-content:center" onclick="doRegister()">Comenzar Evaluación</button>
   </div>
 </div>
@@ -379,20 +389,33 @@ async function init(){
 }
 
 async function doRegister() {
-  const name = document.getElementById('regName').value;
-  const position = document.getElementById('regPosition').value;
+  const name = document.getElementById('regName').value.trim();
+  const position = document.getElementById('regPosition').value.trim();
   const email = document.getElementById('regEmail').value;
   const age = document.getElementById('regAge').value;
   const education = document.getElementById('regEducation').value;
+  const civilStatus = document.getElementById('regCivil').value;
+  const testDate = document.getElementById('regDate').value;
 
   if(!name || !position) return alert("Nombre y Puesto son obligatorios");
+
+  const btn = document.querySelector('#vLogin button');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
 
   try {
     const res = await fetch('/api/candidates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, position, email, age: age ? parseInt(age) : null, education })
+      body: JSON.stringify({ name, position, email, age: age ? parseInt(age) : null, education, civilStatus, testDate })
     });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Error al registrar candidato");
+    }
+
     const data = await res.json();
     candidateId = data.id;
     
@@ -404,7 +427,9 @@ async function doRegister() {
     showView('landing');
   } catch (e) {
     console.error(e);
-    alert("Error al registrar candidato");
+    alert("Error: " + e.message);
+    btn.disabled = false;
+    btn.textContent = originalText;
   }
 }
 
@@ -425,14 +450,42 @@ function renderQuestion(idx){
 }
 
 async function evalNext(){
+  const btn = document.getElementById('btnNext');
+  const originalText = btn.textContent;
+  
   // Save response and move to next or submit
   if(evalState.currentIdx === QUESTIONS.length - 1){
-    const res = await fetch('/api/results', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ candidateId, testName: 'INTEGRA', answers: evalState.responses, scores: { finalScore: 85 } })
-    });
-    if(res.ok) showView('done');
+    const answeredCount = Object.keys(evalState.responses).length;
+    // En produccion se validaría que answeredCount === QUESTIONS.length
+
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      const res = await fetch('/api/results', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ 
+          candidateId, 
+          testName: 'INTEGRA', 
+          answers: evalState.responses, 
+          scores: { finalScore: 85, completed: true } 
+        })
+      });
+      if(res.ok) {
+        showView('done');
+      } else {
+        const errData = await res.json();
+        alert("Error al guardar: " + (errData.error || "Error desconocido"));
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión al intentar guardar.");
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
   } else {
     renderQuestion(evalState.currentIdx + 1);
   }

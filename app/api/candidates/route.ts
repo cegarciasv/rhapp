@@ -9,8 +9,10 @@ export async function POST(req: Request) {
         name: body.name,
         email: body.email,
         position: body.position,
-        age: body.age,
+        age: body.age?.toString(),
         education: body.education,
+        civilStatus: body.civilStatus,
+        testDate: body.testDate,
       }
     });
     return NextResponse.json(candidate);

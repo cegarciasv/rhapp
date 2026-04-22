@@ -45,13 +45,29 @@ hr { border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0; }
       <label>Puesto *</label>
       <input id="regPosition" type="text">
     </div>
+    <div class="form-group">
+      <label>Edad</label>
+      <input id="regAge" type="number">
+    </div>
+    <div class="form-group">
+      <label>Escolaridad</label>
+      <input id="regEducation" type="text">
+    </div>
+    <div class="form-group">
+      <label>Estado Civil</label>
+      <input id="regCivil" type="text">
+    </div>
+    <div class="form-group">
+      <label>Fecha de Evaluación</label>
+      <input id="regDate" type="date">
+    </div>
     <button class="btn" onclick="doRegister()">Registrar y Continuar</button>
   </div>
 
   <div id="vEval" class="card hidden" style="max-width: 800px;">
     <h3 id="q-text" style="text-align: left; margin-bottom: 20px;"></h3>
     <div id="opts"></div>
-    <button class="btn" onclick="next()" style="margin-top:20px">Siguiente</button>
+    <button id="btn-next" class="btn" onclick="next()" style="margin-top:20px">Siguiente</button>
   </div>
 
   <div id="vDone" class="card hidden" style="text-align:center">
@@ -76,22 +92,45 @@ function showReg() {
 }
 
 async function doRegister() {
-  const name = document.getElementById('regName').value;
-  const position = document.getElementById('regPosition').value;
+  const name = document.getElementById('regName').value.trim();
+  const position = document.getElementById('regPosition').value.trim();
+  const age = document.getElementById('regAge').value;
+  const education = document.getElementById('regEducation').value;
+  const civilStatus = document.getElementById('regCivil').value;
+  const testDate = document.getElementById('regDate').value;
+  
   if(!name || !position) return alert("Nombre y Puesto son obligatorios");
 
-  const res = await fetch('/api/candidates', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, position })
-  });
-  const data = await res.json();
-  cid = data.id;
-  
-  document.getElementById('vReg').classList.add('hidden');
-  document.querySelector('.container').style.maxWidth = '800px';
-  document.getElementById('vEval').classList.remove('hidden');
-  showQ();
+  const btn = document.querySelector('#vReg .btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Registrando...';
+
+  try {
+    const res = await fetch('/api/candidates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, position, age, education, civilStatus, testDate })
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Error al registrar candidato");
+    }
+
+    const data = await res.json();
+    cid = data.id;
+    
+    document.getElementById('vReg').classList.add('hidden');
+    document.querySelector('.container').style.maxWidth = '800px';
+    document.getElementById('vEval').classList.remove('hidden');
+    showQ();
+  } catch (error) {
+    console.error(error);
+    alert("Error: " + error.message);
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 function showQ() {
@@ -101,23 +140,55 @@ function showQ() {
     h += `<div class="opt ${ans[cur]===i?'selected':''}" onclick="sel(${i})">${o}</div>`;
   });
   document.getElementById('opts').innerHTML = h;
+  document.getElementById('btn-next').textContent = cur === Q.length - 1 ? 'Finalizar' : 'Siguiente';
 }
 
 function sel(i) { ans[cur] = i; showQ(); }
 
 async function next() {
-  if(ans[cur] === undefined) return alert("Seleccione una opción");
-  if(cur < Q.length - 1) { cur++; showQ(); }
-  else {
-    const res = await fetch('/api/results', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ candidateId: cid, testName: 'MOSS', answers: ans, scores: { completed: true } })
-    });
-    if(res.ok) {
-      document.getElementById('vEval').classList.add('hidden');
-      document.querySelector('.container').style.maxWidth = '500px';
-      document.getElementById('vDone').classList.remove('hidden');
+  if(ans[cur] === undefined) return alert("Seleccione una opción antes de continuar");
+  
+  if(cur < Q.length - 1) { 
+    cur++; 
+    showQ(); 
+  } else {
+    // Validar que todas las preguntas fueron contestadas
+    const answeredCount = Object.keys(ans).length;
+    if (answeredCount < Q.length) {
+      return alert(`Faltan ${Q.length - answeredCount} preguntas por contestar.`);
+    }
+
+    const btn = document.getElementById('btn-next');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    try {
+      const res = await fetch('/api/results', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ 
+          candidateId: cid, 
+          testName: 'MOSS', 
+          answers: ans, 
+          scores: { completed: true, total: Math.round((answeredCount/Q.length)*100) } 
+        })
+      });
+      if(res.ok) {
+        document.getElementById('vEval').classList.add('hidden');
+        document.querySelector('.container').style.maxWidth = '500px';
+        document.getElementById('vDone').classList.remove('hidden');
+      } else {
+        const errData = await res.json();
+        alert("Error al guardar: " + (errData.error || "Error desconocido"));
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error de conexión al intentar guardar.");
+      btn.disabled = false;
+      btn.textContent = originalText;
     }
   }
 }
